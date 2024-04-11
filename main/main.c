@@ -94,7 +94,7 @@ void button_callback(uint gpio, uint32_t events) {
             message.axis = 12;
             break;
         }
-        message.val = (events == GPIO_IRQ_EDGE_RISE) ? 1 : 0; // 1 para pressionado, 0 para liberado
+        message.val = (events == GPIO_IRQ_EDGE_FALL) ? 1 : 0; // 1 para pressionado, 0 para liberado
         xQueueSendFromISR(xQueue, &message, (TickType_t)0);
     }
 }
@@ -174,8 +174,10 @@ void setup() { // Inicializa todos os pinos
 void task_send_button_states(void *pvParameters) {
     adc_t message;
     while (1) {
-        if (xQueueReceive(xQueue, &message, portMAX_DELAY)) {
-            write_package(message);
+        if (uxQueueMessagesWaiting(xQueue) > 0) {
+            if (xQueueReceive(xQueue, &message, portMAX_DELAY)) {
+                write_package(message);
+            }
         }
     }
 }
