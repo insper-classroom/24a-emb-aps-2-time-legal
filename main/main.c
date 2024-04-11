@@ -52,11 +52,7 @@ void write_package(adc_t data) {
 
 void button_callback(uint gpio, uint32_t events) {
     adc_t message;
-    bool button_state = gpio_get(gpio);
-    if (gpio_get(HC06_CONNECTED_PIN) == 0) {
-        // Se a conexão falhar, tente inicializar novamente
-        hc06_init("melhor_guitarra", "1234");
-    } else if (events == GPIO_IRQ_EDGE_RISE || events == GPIO_IRQ_EDGE_FALL) {
+    if (events == GPIO_IRQ_EDGE_RISE || events == GPIO_IRQ_EDGE_FALL) {
         switch (gpio) {
         case GREEN_BUTTON_PIN:
             message.axis = 0;
@@ -103,8 +99,11 @@ void button_callback(uint gpio, uint32_t events) {
     }
 }
 
-void setup() {
+void setup() { // Inicializa todos os pinos
     stdio_init_all();
+
+    gpio_init(HC06_CONNECTED_PIN);
+    gpio_set_dir(HC06_CONNECTED_PIN, GPIO_IN);
 
     gpio_init(GREEN_BUTTON_PIN);
     gpio_set_dir(GREEN_BUTTON_PIN, GPIO_IN);
@@ -188,7 +187,10 @@ void hc06_task(void *p) {
     hc06_init("melhor_guitarra", "1234");
 
     while (true) {
-        ;
+        if (gpio_get(HC06_CONNECTED_PIN) == 0) {
+            // Se a conexão falhar, tente inicializar novamente
+            hc06_init("melhor_guitarra", "1234");
+        }
     }
 }
 
