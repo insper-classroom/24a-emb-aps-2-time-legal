@@ -53,7 +53,10 @@ void write_package(adc_t data) {
 void button_callback(uint gpio, uint32_t events) {
     adc_t message;
     bool button_state = gpio_get(gpio);
-    if (events == GPIO_IRQ_EDGE_RISE || events == GPIO_IRQ_EDGE_FALL) {
+    if (gpio_get(HC06_CONNECTED_PIN) == 0) {
+        // Se a conexão falhar, tente inicializar novamente
+        hc06_init("melhor_guitarra", "1234");
+    } else if (events == GPIO_IRQ_EDGE_RISE || events == GPIO_IRQ_EDGE_FALL) {
         switch (gpio) {
         case GREEN_BUTTON_PIN:
             message.axis = 0;
@@ -96,7 +99,7 @@ void button_callback(uint gpio, uint32_t events) {
             break;
         }
         message.val = (events == GPIO_IRQ_EDGE_RISE) ? 1 : 0; // 1 para pressionado, 0 para liberado
-        xQueueSend(xQueue, &message, (TickType_t)0);
+        xQueueSendFromISR(xQueue, &message, (TickType_t)0);
     }
 }
 
