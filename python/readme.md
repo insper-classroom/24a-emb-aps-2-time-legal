@@ -41,7 +41,7 @@ void write_package(adc_t data) {
 }
 ```
 
-Dentro do seu código em C você deve lidar com cada botão e eixo na ordem que está na lista no python, por exemplo, se tenho 4 botões na minha lista ```buttons = [uinput.BTN_A, uinput.BTN_B, uinput.BTN_X, uinput.BTN_Y]``` eu devo acessá-la utilizando o axis 0, 1, 2 e 3 para os botões A, B, X e Y respectivamente do meu controle. Portanto se você adicionar um botão, você deve contar sempre a posição do novo botão na lista no python e utilzizar esse valor no axis do envio.
+Dentro do seu código em C você deve lidar com cada botão e eixo na ordem que está na lista no python, por exemplo, se tenho 4 botões na lista ```buttons = [uinput.BTN_A, uinput.BTN_B, uinput.BTN_X, uinput.BTN_Y]```, eu devo acessá-la utilizando o axis como 0, 1, 2 e 3 para os botões A, B, X e Y do controle, respectivamente. Portanto se você adicionar um botão, você deve contar sempre a posição do novo botão na lista no python e utilzizar esse valor no axis do envio.
 ### Exemplo de Adição de Botão
 
 Suponha que você deseje adicionar um novo botão chamado BTN_Z ao seu gamepad. Você precisaria seguir estas etapas:
