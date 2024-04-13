@@ -1,9 +1,11 @@
 import serial
 import uinput
 
-ser = serial.Serial('/dev/ttyACM0', 9600) # Change to rfcomm0 if using bluetooth
+ser = serial.Serial('/dev/ttyACM0', 9600) # Mude a porta para rfcomm0 se estiver usando bluetooth no linux
+# Caso você esteja usando windows você deveria definir uma porta fixa para seu dispositivo (para facilitar sua vida mesmo)
+# Siga esse tutorial https://community.element14.com/technologies/internet-of-things/b/blog/posts/standard-serial-over-bluetooth-on-windows-10 e mude o código acima para algo como: ser = serial.Serial('COMX', 9600) (onde X é o número desejado)
 
-# (More codes here https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/uapi/linux/input-event-codes.h?h=v4.7)
+# (Mais códigos aqui https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/uapi/linux/input-event-codes.h?h=v4.7)
 buttons = [uinput.BTN_A, # 0
     uinput.BTN_B, # 1
     uinput.BTN_X, # 2
@@ -22,26 +24,47 @@ buttons = [uinput.BTN_A, # 0
     # uinput.BTN_DPAD_RIGHT,
           ]
 axes = [uinput.ABS_X, uinput.ABS_Y]
-button_quantity = 14 # Quantity of buttons in your controller (without joystick)
+button_quantity = 14 # Quantidade de botões no controlador (sem contar com o joystick)
 
-# Create new gamepad device 
+# Criando gamepad emulado
 device = uinput.Device(buttons + axes)
 
+
+# Função para analisar os dados recebidos do dispositivo externo
 def parse_data(data):
-    button = data[0]  # 0 for A, 1 for B, 2 for X, 3 for Y
-    value = int.from_bytes(data[1:3], byteorder='little', signed=True)
+    """
+    Esta função analisa os dados recebidos do dispositivo externo e retorna o botão e o valor correspondentes.
+
+    Argumentos:
+    data (bytes): Os dados recebidos do dispositivo externo.
+
+    Retorna:
+    int, int: O número do botão e o valor do botão.
+    """
+    button = data[0]  # Axis no C, o botão apertado
+    value = int.from_bytes(data[1:3], byteorder='little', signed=True) # Valor do botão (Apertado, não apertado ou algum outro estado)
     print(f"Received data: {data}")
     print(f"button: {button}, value: {value}")
     return button, value
 
 def emulate_controller(button, value):
-    if button < button_quantity:  # Amoung of buttons in your controller
+    """
+    Esta função emula a entrada do controlador no sistema com base no botão e valor recebidos.
+
+    Argumentos:
+    button (int): O número do botão a ser emulado.
+    value (int): O valor do botão.
+
+    Retorna:
+    None
+    """
+    if button < button_quantity:  # Se o botão estiver entre os botões declarados
         device.emit(buttons[button], value)
-    else:  # Joystick movement
+    else:  # Se não, ele é um eixo
         device.emit(axes[button - button_quantity], value)
 
 try:
-    # sync package
+    # Pacote de sync
     while True:
         print('Waiting for sync package...')
         while True:
@@ -49,7 +72,7 @@ try:
             if data == b'\xff':
                 break
 
-        # Read 4 bytes from UART
+        # Lendo 4 bytes da uart
         data = ser.read(3)
         button, value = parse_data(data)
         emulate_controller(button, value)
