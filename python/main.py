@@ -4,20 +4,20 @@ import uinput
 ser = serial.Serial('/dev/ttyACM0', 9600) # Change to rfcomm0 if using bluetooth
 
 # (More codes here https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/uapi/linux/input-event-codes.h?h=v4.7)
-buttons = [uinput.BTN_A,
-    uinput.BTN_B,
-    uinput.BTN_X,
-    uinput.BTN_Y,
-    uinput.BTN_TL,
-    uinput.BTN_TR,
-    uinput.BTN_TL2, 
-    uinput.BTN_TR2,
-    uinput.BTN_SELECT,
-    uinput.BTN_START,
-    uinput.BTN_THUMBL,
-    uinput.BTN_THUMBR,
-    uinput.BTN_DPAD_UP,
-    uinput.BTN_DPAD_DOWN,
+buttons = [uinput.BTN_A, # 0
+    uinput.BTN_B, # 1
+    uinput.BTN_X, # 2
+    uinput.BTN_Y, # 3
+    uinput.BTN_TL, # 4
+    uinput.BTN_TR, # 5
+    uinput.BTN_TL2, # 6
+    uinput.BTN_TR2, # 7
+    uinput.BTN_SELECT, # 8
+    uinput.BTN_START, # 9
+    uinput.BTN_THUMBL, # 10
+    uinput.BTN_THUMBR, # 11
+    uinput.BTN_DPAD_UP, # 12
+    uinput.BTN_DPAD_DOWN, # 13
     # uinput.BTN_DPAD_LEFT,
     # uinput.BTN_DPAD_RIGHT,
           ]
