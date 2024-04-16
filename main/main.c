@@ -36,7 +36,7 @@
 QueueHandle_t xQueue;
 
 typedef struct adc {
-    char axis;
+    int axis;
     int val;
 } adc_t;
 

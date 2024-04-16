@@ -77,9 +77,7 @@ try:
 
         # Lendo 4 bytes da uart
         data = ser.read(3)
-        print(f"Received data: {data}")
         button, value = parse_data(data)
-        print(f"button: {button}, value: {value}")
         emulate_controller(button, value)
 
 except KeyboardInterrupt:
