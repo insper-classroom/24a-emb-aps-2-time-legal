@@ -27,7 +27,7 @@
 #define ROTARY_ENCODER_2_PIN_B 20
 #define ROTARY_ENCODER_2_CLICK 21
 
-#define HC06_UART_ID uart1
+#define HC06_UART_ID uart0
 #define HC06_BAUD_RATE 9600
 #define HC06_CONNECTED_PIN 3
 #define HC06_TX_PIN 4
@@ -48,6 +48,7 @@ void write_package(adc_t data) {
     uart_putc_raw(HC06_UART_ID, data.axis);
     uart_putc_raw(HC06_UART_ID, msb);
     uart_putc_raw(HC06_UART_ID, lsb);
+    uart_putc_raw(HC06_UART_ID, -1);
 }
 
 void button_callback(uint gpio, uint32_t events) {
@@ -102,8 +103,8 @@ void button_callback(uint gpio, uint32_t events) {
 void setup() { // Inicializa todos os pinos
     stdio_init_all();
 
-    gpio_init(HC06_CONNECTED_PIN);
-    gpio_set_dir(HC06_CONNECTED_PIN, GPIO_IN);
+    // gpio_init(HC06_CONNECTED_PIN);
+    // gpio_set_dir(HC06_CONNECTED_PIN, GPIO_IN);
 
     gpio_init(GREEN_BUTTON_PIN);
     gpio_set_dir(GREEN_BUTTON_PIN, GPIO_IN);
@@ -113,62 +114,62 @@ void setup() { // Inicializa todos os pinos
     gpio_init(BLUE_BUTTON_PIN);
     gpio_set_dir(BLUE_BUTTON_PIN, GPIO_IN);
     gpio_pull_up(BLUE_BUTTON_PIN);
-    gpio_set_irq_enabled_with_callback(BLUE_BUTTON_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
+    // gpio_set_irq_enabled_with_callback(BLUE_BUTTON_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
 
     gpio_init(ORANGE_BUTTON_PIN);
     gpio_set_dir(ORANGE_BUTTON_PIN, GPIO_IN);
     gpio_pull_up(ORANGE_BUTTON_PIN);
-    gpio_set_irq_enabled_with_callback(ORANGE_BUTTON_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
+    // gpio_set_irq_enabled_with_callback(ORANGE_BUTTON_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
 
     gpio_init(RED_BUTTON_PIN);
     gpio_set_dir(RED_BUTTON_PIN, GPIO_IN);
     gpio_pull_up(RED_BUTTON_PIN);
-    gpio_set_irq_enabled_with_callback(RED_BUTTON_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
+    // gpio_set_irq_enabled_with_callback(RED_BUTTON_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
 
     gpio_init(YELLOW_BUTTON_PIN);
     gpio_set_dir(YELLOW_BUTTON_PIN, GPIO_IN);
     gpio_pull_up(YELLOW_BUTTON_PIN);
-    gpio_set_irq_enabled_with_callback(YELLOW_BUTTON_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
+    // gpio_set_irq_enabled_with_callback(YELLOW_BUTTON_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
 
     gpio_init(UP_BUTTON_PIN);
     gpio_set_dir(UP_BUTTON_PIN, GPIO_IN);
     gpio_pull_up(UP_BUTTON_PIN);
-    gpio_set_irq_enabled_with_callback(UP_BUTTON_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
+    // gpio_set_irq_enabled_with_callback(UP_BUTTON_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
 
     gpio_init(DOWN_BUTTON_PIN);
     gpio_set_dir(DOWN_BUTTON_PIN, GPIO_IN);
     gpio_pull_up(DOWN_BUTTON_PIN);
-    gpio_set_irq_enabled_with_callback(DOWN_BUTTON_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
+    // gpio_set_irq_enabled_with_callback(DOWN_BUTTON_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
 
     gpio_init(ROTARY_ENCODER_1_PIN_A);
     gpio_set_dir(ROTARY_ENCODER_1_PIN_A, GPIO_IN);
     gpio_pull_up(ROTARY_ENCODER_1_PIN_A);
-    gpio_set_irq_enabled_with_callback(ROTARY_ENCODER_1_PIN_A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
+    // gpio_set_irq_enabled_with_callback(ROTARY_ENCODER_1_PIN_A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
 
     gpio_init(ROTARY_ENCODER_1_PIN_B);
     gpio_set_dir(ROTARY_ENCODER_1_PIN_B, GPIO_IN);
     gpio_pull_up(ROTARY_ENCODER_1_PIN_B);
-    gpio_set_irq_enabled_with_callback(ROTARY_ENCODER_1_PIN_B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
+    // gpio_set_irq_enabled_with_callback(ROTARY_ENCODER_1_PIN_B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
 
     gpio_init(ROTARY_ENCODER_1_CLICK);
     gpio_set_dir(ROTARY_ENCODER_1_CLICK, GPIO_IN);
     gpio_pull_up(ROTARY_ENCODER_1_CLICK);
-    gpio_set_irq_enabled_with_callback(ROTARY_ENCODER_1_CLICK, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
+    // gpio_set_irq_enabled_with_callback(ROTARY_ENCODER_1_CLICK, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
 
     gpio_init(ROTARY_ENCODER_2_PIN_A);
     gpio_set_dir(ROTARY_ENCODER_2_PIN_A, GPIO_IN);
     gpio_pull_up(ROTARY_ENCODER_2_PIN_A);
-    gpio_set_irq_enabled_with_callback(ROTARY_ENCODER_2_PIN_A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
+    // gpio_set_irq_enabled_with_callback(ROTARY_ENCODER_2_PIN_A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
 
     gpio_init(ROTARY_ENCODER_2_PIN_B);
     gpio_set_dir(ROTARY_ENCODER_2_PIN_B, GPIO_IN);
     gpio_pull_up(ROTARY_ENCODER_2_PIN_B);
-    gpio_set_irq_enabled_with_callback(ROTARY_ENCODER_2_PIN_B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
+    // gpio_set_irq_enabled_with_callback(ROTARY_ENCODER_2_PIN_B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
 
     gpio_init(ROTARY_ENCODER_2_CLICK);
     gpio_set_dir(ROTARY_ENCODER_2_CLICK, GPIO_IN);
     gpio_pull_up(ROTARY_ENCODER_2_CLICK);
-    gpio_set_irq_enabled_with_callback(ROTARY_ENCODER_2_CLICK, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
+    // gpio_set_irq_enabled_with_callback(ROTARY_ENCODER_2_CLICK, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
 }
 
 void task_send_button_states(void *pvParameters) {
@@ -198,15 +199,14 @@ void hc06_task(void *p) {
 
 int main() {
     stdio_init_all();
-
-    printf("Start bluetooth task\n");
-
-    xQueue = xQueueCreate(10, sizeof(char *));
-
-    xTaskCreate(hc06_task, "UART_Task 1", 4096, NULL, 1, NULL);
-    xTaskCreate(task_send_button_states, "Send Button States", 4096, NULL, 1, NULL);
-
     setup();
+
+    // printf("Start bluetooth task\n");
+
+    xQueue = xQueueCreate(20, sizeof(adc_t));
+
+    // xTaskCreate(hc06_task, "UART_Task 1", 4096, NULL, 1, NULL);
+    xTaskCreate(task_send_button_states, "Send Button States", 4096, NULL, 1, NULL);
 
     vTaskStartScheduler();
 
