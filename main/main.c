@@ -172,7 +172,7 @@ void setup() { // Inicializa todos os pinos
     // gpio_set_irq_enabled_with_callback(ROTARY_ENCODER_2_CLICK, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
 }
 
-void task_send_button_states(void *pvParameters) {
+void task_send_button_states(void *p) {
     adc_t message;
     uint32_t start_ms = to_ms_since_boot(get_absolute_time());
     while (1) {
