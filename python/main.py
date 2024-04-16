@@ -1,7 +1,8 @@
 import serial
 import uinput
 
-ser = serial.Serial('/dev/ttyACM0', 9600) # Mude a porta para rfcomm0 se estiver usando bluetooth no linux
+ser = serial.Serial('/dev/ttyACM0', 115200)
+# ser = serial.Serial('/dev/ttyACM0', 9600) # Mude a porta para rfcomm0 se estiver usando bluetooth no linux
 # Caso você esteja usando windows você deveria definir uma porta fixa para seu dispositivo (para facilitar sua vida mesmo)
 # Siga esse tutorial https://community.element14.com/technologies/internet-of-things/b/blog/posts/standard-serial-over-bluetooth-on-windows-10 e mude o código acima para algo como: ser = serial.Serial('COMX', 9600) (onde X é o número desejado)
 
@@ -69,11 +70,14 @@ try:
         print('Waiting for sync package...')
         while True:
             data = ser.read(1)
+            # printa binario
+            print(data)
             if data == b'\xff':
                 break
 
         # Lendo 4 bytes da uart
         data = ser.read(3)
+        print(f"Received data: {data}")
         button, value = parse_data(data)
         print(f"button: {button}, value: {value}")
         emulate_controller(button, value)
