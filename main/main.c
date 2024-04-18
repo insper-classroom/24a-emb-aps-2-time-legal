@@ -101,12 +101,12 @@ void button_callback(uint gpio, uint32_t events) {
         case DOWN_BUTTON_PIN:
             message.axis = 6;
             break;
-        case ROTARY_ENCODER_1_PIN_A:
-            message.axis = 7;
-            break;
-        case ROTARY_ENCODER_1_PIN_B:
-            message.axis = 8;
-            break;
+        // case ROTARY_ENCODER_1_PIN_A:
+        //     message.axis = 7;
+        //     break;
+        // case ROTARY_ENCODER_1_PIN_B:
+        //     message.axis = 8;
+        //     break;
         case ROTARY_ENCODER_1_CLICK:
             message.axis = 9;
             break;
