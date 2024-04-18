@@ -195,7 +195,6 @@ void setup() { // Inicializa todos os pinos
     gpio_set_irq_enabled_with_callback(ROTARY_ENCODER_1_CLICK, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
 
     // GPIOS FOR THE ENCODER 2
-
     gpio_init(ROTARY_ENCODER_2_PIN_A);
     gpio_set_dir(ROTARY_ENCODER_2_PIN_A, GPIO_IN);
     gpio_pull_up(ROTARY_ENCODER_2_PIN_A);
@@ -231,10 +230,8 @@ void write_package(adc_t data) {
 void task_send_button_states(void *p) {
     adc_t message;
     while (1) {
-        if (uxQueueMessagesWaiting(xQueue) > 0) {
-            if (xQueueReceive(xQueue, &message, portMAX_DELAY)) {
-                write_package(message);
-            }
+        if (xQueueReceive(xQueue, &message, portMAX_DELAY) == pdTRUE) {
+            write_package(message);
         }
     }
 }
