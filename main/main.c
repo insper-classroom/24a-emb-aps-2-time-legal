@@ -40,6 +40,13 @@ typedef struct adc {
     int val;
 } adc_t;
 
+typedef struct button_state {
+    uint32_t last_change_ms;
+    int state;
+} button_state_t;
+
+button_state_t button_states[13]; // Temos 13 botões, então criamos um array de 13 elementos
+
 int rotate_callback(uint gpio, uint32_t events) {
     static const int8_t state_table[] = {
         0, -1, 1, 0,
@@ -47,8 +54,6 @@ int rotate_callback(uint gpio, uint32_t events) {
         -1, 0, 0, 1,
         0, 1, -1, 0};
     static uint8_t encoder_state = 0; // Current state of the encoder
-    static int last_sum = 0;          // Last non-zero sum to filter out noise
-    static int debounce_counter = 0;  // Debounce counter
 
     int8_t encoded;
     int sum;
@@ -59,20 +64,11 @@ int rotate_callback(uint gpio, uint32_t events) {
     sum = state_table[encoder_state & 0x0f];
 
     if (sum != 0) {
-        if (sum == last_sum) {
-            debounce_counter++;
-            if (debounce_counter > 1) {
-                if (sum == 1) {
-                    retorno = 1;
-                } else if (sum == -1) {
-                    retorno = 0;
-                }
-                debounce_counter = 0; // Reset the counter after confirming the direction
-            }
-        } else {
-            debounce_counter = 0; // Reset the counter if the direction changes
+        if (sum == 1) {
+            retorno = 1;
+        } else if (sum == -1) {
+            retorno = 0;
         }
-        last_sum = sum; // Update last_sum to the current sum
     }
     return retorno;
 }
@@ -132,8 +128,12 @@ void button_callback(uint gpio, uint32_t events) {
             message.axis = 12;
             break;
         }
-
-        xQueueSendFromISR(xQueue, &message, (TickType_t)0);
+        uint32_t current_ms = to_ms_since_boot(get_absolute_time());
+        if (current_ms - button_states[message.axis].last_change_ms > 50 || button_states[message.axis].state != message.val) { // 50 ms de debounce
+            button_states[message.axis].state = message.val;
+            button_states[message.axis].last_change_ms = current_ms;
+            xQueueSendFromISR(xQueue, &message, (TickType_t)0);
+        }
     }
 }
 
@@ -210,6 +210,11 @@ void setup() { // Inicializa todos os pinos
     gpio_set_dir(ROTARY_ENCODER_2_CLICK, GPIO_IN);
     gpio_pull_up(ROTARY_ENCODER_2_CLICK);
     gpio_set_irq_enabled_with_callback(ROTARY_ENCODER_2_CLICK, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
+
+    for (int i = 0; i < 13; i++) {
+        button_states[i].state = 0;
+        button_states[i].last_change_ms = to_ms_since_boot(get_absolute_time());
+    }
 }
 
 void write_package(adc_t data) {
