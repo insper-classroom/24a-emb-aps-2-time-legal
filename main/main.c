@@ -40,17 +40,6 @@ typedef struct adc {
     int val;
 } adc_t;
 
-void write_package(adc_t data) {
-    int val = data.val;
-    int msb = val >> 8;
-    int lsb = val & 0xFF;
-
-    uart_putc_raw(HC06_UART_ID, data.axis);
-    uart_putc_raw(HC06_UART_ID, msb);
-    uart_putc_raw(HC06_UART_ID, lsb);
-    uart_putc_raw(HC06_UART_ID, -1);
-}
-
 void button_callback(uint gpio, uint32_t events) {
     adc_t message;
     if (events == GPIO_IRQ_EDGE_RISE || events == GPIO_IRQ_EDGE_FALL) {
@@ -172,6 +161,17 @@ void setup() { // Inicializa todos os pinos
     // gpio_set_irq_enabled_with_callback(ROTARY_ENCODER_2_CLICK, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
 }
 
+void write_package(adc_t data) {
+    int val = data.val;
+    int msb = val >> 8;
+    int lsb = val & 0xFF;
+
+    uart_putc_raw(HC06_UART_ID, data.axis);
+    uart_putc_raw(HC06_UART_ID, msb);
+    uart_putc_raw(HC06_UART_ID, lsb);
+    uart_putc_raw(HC06_UART_ID, -1);
+}
+
 void task_send_button_states(void *p) {
     adc_t message;
     uint32_t start_ms = to_ms_since_boot(get_absolute_time());
@@ -199,6 +199,67 @@ void hc06_task(void *p) {
             // Se a conexão falhar, tente inicializar novamente
             hc06_init("melhor_guitarra", "1234");
         }
+    }
+}
+
+void rotate_task(void *p) {
+    static const int8_t state_table[] = {
+        0, -1,  1,  0,
+        1,  0,  0, -1,
+        -1,  0,  0,  1,
+        0,  1, -1,  0
+    };
+    uint8_t enc_state = 0; // Current state of the encoder
+    int8_t last_encoded = 0; // Last encoded state
+    int8_t encoded;
+    int sum;
+    int last_sum = 0; // Last non-zero sum to filter out noise
+    int debounce_counter = 0; // Debounce counter
+
+    // Initialize GPIO pins for the encoder
+    gpio_init(ROTARY_ENCODER_1_PIN_A);
+    gpio_init(ROTARY_ENCODER_1_PIN_B);
+
+    gpio_set_dir(ROTARY_ENCODER_1_PIN_A, GPIO_IN);
+    gpio_set_dir(ROTARY_ENCODER_1_PIN_B, GPIO_IN);
+
+    gpio_pull_up(ROTARY_ENCODER_1_PIN_A);  // Enable internal pull-up
+    gpio_pull_up(ROTARY_ENCODER_1_PIN_B);  // Enable internal pull-up
+
+    last_encoded = (gpio_get(ROTARY_ENCODER_1_PIN_A) << 1) | gpio_get(ROTARY_ENCODER_1_PIN_B);
+
+    printf("Encoder initialized\n");
+
+    while (1) {
+        encoded = (gpio_get(ROTARY_ENCODER_1_PIN_A) << 1) | gpio_get(ROTARY_ENCODER_1_PIN_B);
+        enc_state = (enc_state << 2) | encoded;
+        sum = state_table[enc_state & 0x0f];
+
+        if (sum != 0) {
+            if (sum == last_sum) {
+                if (++debounce_counter > 1) {  // Check if the same movement is read consecutively
+                    if (sum == 1) {
+                        printf("RIGHT\n");
+                        // uart_putc_raw(uart0, 3);
+                        // uart_putc_raw(uart0, 2);
+                        // uart_putc_raw(uart0, 0);
+                        // uart_putc_raw(uart0, -1);
+                    } else if (sum == -1) {
+                        printf("LEFT\n");
+                        // uart_putc_raw(uart0, 3);
+                        // uart_putc_raw(uart0, 3);
+                        // uart_putc_raw(uart0, 0);
+                        // uart_putc_raw(uart0, -1);
+                    }
+                    debounce_counter = 0;  // Reset the counter after confirming the direction
+                }
+            } else {
+                debounce_counter = 0;  // Reset the counter if the direction changes
+            }
+            last_sum = sum;  // Update last_sum to the current sum
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(1)); // Poll every 1 ms to improve responsiveness
     }
 }
 
