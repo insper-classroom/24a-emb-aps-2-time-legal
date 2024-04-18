@@ -230,15 +230,10 @@ void write_package(adc_t data) {
 
 void task_send_button_states(void *p) {
     adc_t message;
-    uint32_t start_ms = to_ms_since_boot(get_absolute_time());
     while (1) {
         if (uxQueueMessagesWaiting(xQueue) > 0) {
             if (xQueueReceive(xQueue, &message, portMAX_DELAY)) {
-                uint32_t pressed_ms = to_ms_since_boot(get_absolute_time());
-                if (pressed_ms - start_ms > 80) {
-                    write_package(message);
-                    start_ms = pressed_ms;
-                }
+                write_package(message);
             }
         }
     }
