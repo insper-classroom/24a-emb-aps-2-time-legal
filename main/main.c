@@ -130,15 +130,16 @@ void setup() { // Inicializa todos os pinos
     gpio_pull_up(DOWN_BUTTON_PIN);
     // gpio_set_irq_enabled_with_callback(DOWN_BUTTON_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
 
+    // GPIOS FOR THE ENCODER 1
     gpio_init(ROTARY_ENCODER_1_PIN_A);
     gpio_set_dir(ROTARY_ENCODER_1_PIN_A, GPIO_IN);
     gpio_pull_up(ROTARY_ENCODER_1_PIN_A);
-    // gpio_set_irq_enabled_with_callback(ROTARY_ENCODER_1_PIN_A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
 
     gpio_init(ROTARY_ENCODER_1_PIN_B);
     gpio_set_dir(ROTARY_ENCODER_1_PIN_B, GPIO_IN);
     gpio_pull_up(ROTARY_ENCODER_1_PIN_B);
-    // gpio_set_irq_enabled_with_callback(ROTARY_ENCODER_1_PIN_B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
+
+    // 
 
     gpio_init(ROTARY_ENCODER_1_CLICK);
     gpio_set_dir(ROTARY_ENCODER_1_CLICK, GPIO_IN);
@@ -204,40 +205,28 @@ void hc06_task(void *p) {
 
 void rotate_task(void *p) {
     static const int8_t state_table[] = {
-        0, -1,  1,  0,
-        1,  0,  0, -1,
-        -1,  0,  0,  1,
-        0,  1, -1,  0
-    };
-    uint8_t enc_state = 0; // Current state of the encoder
-    int8_t last_encoded = 0; // Last encoded state
+        0, -1, 1, 0,
+        1, 0, 0, -1,
+        -1, 0, 0, 1,
+        0, 1, -1, 0
+        };
+    uint8_t encoder_state = 0; // Current state of the encoder
     int8_t encoded;
     int sum;
-    int last_sum = 0; // Last non-zero sum to filter out noise
+    int last_sum = 0;         // Last non-zero sum to filter out noise
     int debounce_counter = 0; // Debounce counter
-
-    // Initialize GPIO pins for the encoder
-    gpio_init(ROTARY_ENCODER_1_PIN_A);
-    gpio_init(ROTARY_ENCODER_1_PIN_B);
-
-    gpio_set_dir(ROTARY_ENCODER_1_PIN_A, GPIO_IN);
-    gpio_set_dir(ROTARY_ENCODER_1_PIN_B, GPIO_IN);
-
-    gpio_pull_up(ROTARY_ENCODER_1_PIN_A);  // Enable internal pull-up
-    gpio_pull_up(ROTARY_ENCODER_1_PIN_B);  // Enable internal pull-up
-
-    last_encoded = (gpio_get(ROTARY_ENCODER_1_PIN_A) << 1) | gpio_get(ROTARY_ENCODER_1_PIN_B);
 
     printf("Encoder initialized\n");
 
     while (1) {
         encoded = (gpio_get(ROTARY_ENCODER_1_PIN_A) << 1) | gpio_get(ROTARY_ENCODER_1_PIN_B);
-        enc_state = (enc_state << 2) | encoded;
-        sum = state_table[enc_state & 0x0f];
+        encoder_state = (encoder_state << 2) | encoded;
+        sum = state_table[encoder_state & 0x0f];
 
         if (sum != 0) {
             if (sum == last_sum) {
-                if (++debounce_counter > 1) {  // Check if the same movement is read consecutively
+                debounce_counter++;
+                if (debounce_counter > 1) {
                     if (sum == 1) {
                         printf("RIGHT\n");
                         // uart_putc_raw(uart0, 3);
@@ -251,12 +240,12 @@ void rotate_task(void *p) {
                         // uart_putc_raw(uart0, 0);
                         // uart_putc_raw(uart0, -1);
                     }
-                    debounce_counter = 0;  // Reset the counter after confirming the direction
+                    debounce_counter = 0; // Reset the counter after confirming the direction
                 }
             } else {
-                debounce_counter = 0;  // Reset the counter if the direction changes
+                debounce_counter = 0; // Reset the counter if the direction changes
             }
-            last_sum = sum;  // Update last_sum to the current sum
+            last_sum = sum; // Update last_sum to the current sum
         }
 
         vTaskDelay(pdMS_TO_TICKS(1)); // Poll every 1 ms to improve responsiveness
@@ -272,7 +261,8 @@ int main() {
     xQueue = xQueueCreate(20, sizeof(adc_t));
 
     // xTaskCreate(hc06_task, "UART_Task 1", 4096, NULL, 1, NULL);
-    xTaskCreate(task_send_button_states, "Send Button States", 4096, NULL, 1, NULL);
+    // xTaskCreate(task_send_button_states, "Send Button States", 4096, NULL, 1, NULL);
+    xTaskCreate(rotate_task, "Rotate Task", 4096, NULL, 1, NULL);
 
     vTaskStartScheduler();
 
