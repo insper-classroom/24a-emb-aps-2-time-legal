@@ -129,7 +129,7 @@ void button_callback(uint gpio, uint32_t events) {
             break;
         }
         uint32_t current_ms = to_ms_since_boot(get_absolute_time());
-        if (current_ms - button_states[message.axis].last_change_ms > 50 || button_states[message.axis].state != message.val) { // 50 ms de debounce
+        if (current_ms - button_states[message.axis].last_change_ms > 50) { // 50 ms de debounce
             button_states[message.axis].state = message.val;
             button_states[message.axis].last_change_ms = current_ms;
             xQueueSendFromISR(xQueue, &message, (TickType_t)0);
