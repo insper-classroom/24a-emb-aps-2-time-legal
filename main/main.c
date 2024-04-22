@@ -133,7 +133,7 @@ void button_callback(uint gpio, uint32_t events) {
         if (current_ms - button_states[message.axis].last_change_ms > 50) { // 50 ms de debounce
             button_states[message.axis].state = message.val;
             button_states[message.axis].last_change_ms = current_ms;
-            printf("Button %d: %d\n", message.axis, message.val);
+            // printf("Button %d: %d\n", message.axis, message.val);
             xQueueSendFromISR(xQueue, &message, (TickType_t)0);
         }
     }
@@ -257,7 +257,7 @@ int main() {
 
     xQueue = xQueueCreate(20, sizeof(adc_t));
 
-    xTaskCreate(hc06_task, "UART_Task 1", 4096, NULL, 1, NULL);
+    // xTaskCreate(hc06_task, "UART_Task 1", 4096, NULL, 1, NULL);
     xTaskCreate(task_send_button_states, "Send Button States", 4096, NULL, 1, NULL);
 
     vTaskStartScheduler();
