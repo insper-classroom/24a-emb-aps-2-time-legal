@@ -81,20 +81,19 @@ void button_callback(uint gpio, uint32_t events) {
             message.axis = 0;
             message.val = (events == GPIO_IRQ_EDGE_FALL) ? 1 : 0; // 1 para pressionado, 0 para liberado
             break;
-        case RED_BUTTON_PIN:
-            // message.axis = 3;
+        case BLUE_BUTTON_PIN:
             message.axis = 1;
             message.val = (events == GPIO_IRQ_EDGE_FALL) ? 1 : 0; // 1 para pressionado, 0 para liberado
             break;
-        case YELLOW_BUTTON_PIN:
+        case ORANGE_BUTTON_PIN:
             message.axis = 2;
             message.val = (events == GPIO_IRQ_EDGE_FALL) ? 1 : 0; // 1 para pressionado, 0 para liberado
             break;
-        case BLUE_BUTTON_PIN:
+        case RED_BUTTON_PIN:
             message.axis = 3;
             message.val = (events == GPIO_IRQ_EDGE_FALL) ? 1 : 0; // 1 para pressionado, 0 para liberado
             break;
-        case ORANGE_BUTTON_PIN:
+        case YELLOW_BUTTON_PIN:
             message.axis = 4;
             message.val = (events == GPIO_IRQ_EDGE_FALL) ? 1 : 0; // 1 para pressionado, 0 para liberado
             break;
@@ -133,7 +132,6 @@ void button_callback(uint gpio, uint32_t events) {
         if (current_ms - button_states[message.axis].last_change_ms > 10) { // 50 ms de debounce
             button_states[message.axis].state = message.val;
             button_states[message.axis].last_change_ms = current_ms;
-            // printf("Button %d: %d\n", message.axis, message.val);
             xQueueSendFromISR(xQueue, &message, (TickType_t)0);
         }
     }
@@ -196,7 +194,6 @@ void setup() { // Inicializa todos os pinos
     gpio_pull_up(ROTARY_ENCODER_1_CLICK);
     gpio_set_irq_enabled_with_callback(ROTARY_ENCODER_1_CLICK, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
 
-    // GPIOS FOR THE ENCODER 2
     gpio_init(ROTARY_ENCODER_2_PIN_A);
     gpio_set_dir(ROTARY_ENCODER_2_PIN_A, GPIO_IN);
     gpio_pull_up(ROTARY_ENCODER_2_PIN_A);
@@ -270,7 +267,7 @@ int main() {
 
     xQueue = xQueueCreate(20, sizeof(adc_t));
 
-    // xTaskCreate(hc06_task, "UART_Task 1", 4096, NULL, 1, NULL);
+    xTaskCreate(hc06_task, "UART_Task 1", 4096, NULL, 1, NULL);
     xTaskCreate(task_send_button_states, "Send Button States", 4096, NULL, 1, NULL);
 
     vTaskStartScheduler();
