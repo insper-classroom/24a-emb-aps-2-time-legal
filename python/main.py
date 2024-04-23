@@ -69,9 +69,8 @@ try:
         print('Waiting for sync package...')
         while True:
             data = ser.read(1)
-            # if data == b'\xff':
-            #     break
-            print(data)
+            if data == b'\xff':
+                break
 
         # Lendo 4 bytes da uart
         data = ser.read(3)

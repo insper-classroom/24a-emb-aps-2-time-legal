@@ -17,9 +17,9 @@
 #define BLUE_BUTTON_PIN 7
 #define ORANGE_BUTTON_PIN 8
 #define RED_BUTTON_PIN 9
-#define YELLOW_BUTTON_PIN 10
+#define YELLOW_BUTTON_PIN 12
 #define UP_BUTTON_PIN 11
-#define DOWN_BUTTON_PIN 12
+#define DOWN_BUTTON_PIN 10
 #define ROTARY_ENCODER_1_PIN_A 16
 #define ROTARY_ENCODER_1_PIN_B 17
 #define ROTARY_ENCODER_1_CLICK 18
@@ -129,7 +129,7 @@ void button_callback(uint gpio, uint32_t events) {
             break;
         }
         uint32_t current_ms = to_ms_since_boot(get_absolute_time());
-        if (current_ms - button_states[message.axis].last_change_ms > 50 || button_states[message.axis].state != message.val) { // 50 ms de debounce
+        if (current_ms - button_states[message.axis].last_change_ms > 10) { // 50 ms de debounce
             button_states[message.axis].state = message.val;
             button_states[message.axis].last_change_ms = current_ms;
             xQueueSendFromISR(xQueue, &message, (TickType_t)0);
@@ -230,14 +230,20 @@ void write_package(adc_t data) {
 
 void task_send_button_states(void *p) {
     adc_t message;
-    uint32_t start_ms = to_ms_since_boot(get_absolute_time());
+    adc_t buffer[10];     // Buffer to hold button press events
+    int buffer_index = 0; // Index to keep track of buffer
+
     while (1) {
         if (uxQueueMessagesWaiting(xQueue) > 0) {
             if (xQueueReceive(xQueue, &message, portMAX_DELAY)) {
-                uint32_t pressed_ms = to_ms_since_boot(get_absolute_time());
-                if (pressed_ms - start_ms > 80) {
-                    write_package(message);
-                    start_ms = pressed_ms;
+                buffer[buffer_index++] = message; // Add message to buffer
+
+                // If buffer is full or no more messages are waiting, send the buffer
+                if (buffer_index == 10 || uxQueueMessagesWaiting(xQueue) == 0) {
+                    for (int i = 0; i < buffer_index; i++) {
+                        write_package(buffer[i]);
+                    }
+                    buffer_index = 0; // Reset buffer index
                 }
             }
         }
@@ -248,7 +254,7 @@ void hc06_task(void *p) {
     uart_init(HC06_UART_ID, HC06_BAUD_RATE);
     gpio_set_function(HC06_TX_PIN, GPIO_FUNC_UART);
     gpio_set_function(HC06_RX_PIN, GPIO_FUNC_UART);
-    hc06_init("melhor_guitarra", "1234");
+    hc06_init("virus", "1234");
 
     while (true) {
         ;
