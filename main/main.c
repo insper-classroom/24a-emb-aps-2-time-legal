@@ -191,7 +191,6 @@ void setup() { // Inicializa todos os pinos
 
     gpio_init(ROTARY_ENCODER_1_CLICK);
     gpio_set_dir(ROTARY_ENCODER_1_CLICK, GPIO_IN);
-    gpio_pull_up(ROTARY_ENCODER_1_CLICK);
     gpio_set_irq_enabled_with_callback(ROTARY_ENCODER_1_CLICK, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
 
     gpio_init(ROTARY_ENCODER_2_PIN_A);
@@ -206,7 +205,6 @@ void setup() { // Inicializa todos os pinos
 
     gpio_init(ROTARY_ENCODER_2_CLICK);
     gpio_set_dir(ROTARY_ENCODER_2_CLICK, GPIO_IN);
-    gpio_pull_up(ROTARY_ENCODER_2_CLICK);
     gpio_set_irq_enabled_with_callback(ROTARY_ENCODER_2_CLICK, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &button_callback);
 
     for (int i = 0; i < 13; i++) {

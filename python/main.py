@@ -1,5 +1,7 @@
 import serial
 import uinput
+import os
+from subprocess import call
 
 ser = serial.Serial('/dev/rfcomm0', 9600) # Mude a porta para rfcomm0 se estiver usando bluetooth no linux
 # Caso você esteja usando windows você deveria definir uma porta fixa para seu dispositivo (para facilitar sua vida mesmo)
@@ -47,6 +49,10 @@ def parse_data(data):
     print(f"button: {button}, value: {value}")
     return button, value
 
+# Adicione esta variável no início do seu código
+received_zero = {9: False, 12: False}
+last_button = None
+
 def emulate_controller(button, value):
     """
     Esta função emula a entrada do controlador no sistema com base no botão e valor recebidos.
@@ -58,10 +64,34 @@ def emulate_controller(button, value):
     Retorna:
     None
     """
-    if button < button_quantity:  # Se o botão estiver entre os botões declarados
+    global received_zero
+    global last_button
+
+    if button in [9, 12] and value == 0:  # Se o botão for 9 ou 12 e o valor for 0
+        if not received_zero[button]:  # Se ainda não recebemos um valor 0 para este botão
+            value = 1  # Transforme o valor em 1
+            received_zero[button] = True  # Atualize a variável para indicar que já recebemos um valor 0 para este botão
+        else:  # Se já recebemos um valor 0 para este botão
+            received_zero[button] = False  # Reset the variable for the next time
+
+    if button in [7, 8]:  # Se o botão for 7 ou 8
+        if value == 256:  # Se o valor for 256
+            os.system("pactl set-sink-volume alsa_output.pci-0000_07_00.6.analog-stereo +5%")
+        elif value == 0:  # Se o valor for 0
+            os.system("pactl set-sink-volume alsa_output.pci-0000_07_00.6.analog-stereo -5%")
+
+    if button == 11 and last_button == 10:  # Se o botão atual for 11 e o último botão foi 10
+        device.emit(buttons[11], 1)  # Envia o botão 11 como 1
+        device.emit(buttons[11], 0)  # Envia o botão 11 como 0
+    elif button == 10 and last_button == 11:  # Se o botão atual for 10 e o último botão foi 11
+        device.emit(buttons[10], 1)  # Envia o botão 10 como 1
+        device.emit(buttons[10], 0)  # Envia o botão 10 como 0
+    elif button < button_quantity:  # Se o botão estiver entre os botões declarados
         device.emit(buttons[button], value)
     else:  # Se não, ele é um eixo
         device.emit(axes[button - button_quantity], value)
+
+    last_button = button  # Atualiza o último botão pressionado
 
 try:
     # Pacote de sync
